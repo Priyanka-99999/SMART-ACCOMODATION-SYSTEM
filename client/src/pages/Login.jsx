@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Building2, ShieldCheck, ArrowRight, Home } from 'lucide-react';
+import { User, Building2, ShieldCheck, ArrowRight, Home, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 
 const ROLES = [
@@ -49,18 +49,36 @@ const Login = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [validationError, setValidationError] = useState('');
+  
   const { login, loading, error } = useAuthStore();
   const navigate = useNavigate();
 
   const activeRoleConfig = ROLES.find(r => r.key === selectedRole);
 
+  const validateForm = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setValidationError('Please enter a valid email address');
+      return false;
+    }
+    if (password.length < 6) {
+      setValidationError('Password must be at least 6 characters long');
+      return false;
+    }
+    setValidationError('');
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
       await login(email, password);
       const actualRole = useAuthStore.getState().user?.role;
 
-      // Validate selected role matches actual account role
       if (selectedRole !== actualRole) {
         const roleLabels = { user: 'Tenant', owner: 'PG Owner', admin: 'Super Admin' };
         useAuthStore.getState().logout();
@@ -82,6 +100,8 @@ const Login = () => {
     setSelectedRole(roleKey);
     setEmail('');
     setPassword('');
+    setValidationError('');
+    useAuthStore.setState({ error: null });
   };
 
   return (
@@ -142,9 +162,10 @@ const Login = () => {
               </div>
             </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm font-bold text-center">
-                {error}
+            {(error || validationError) && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm font-bold flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{validationError || error}</span>
               </div>
             )}
 
@@ -158,20 +179,40 @@ const Login = () => {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (validationError) setValidationError('');
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Password</label>
-                <input
-                  type="password"
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-sm font-bold text-gray-700">Password</label>
+                  <Link to="/forgot-password" size="sm" className="text-xs font-bold text-primary hover:text-indigo-700">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (validationError) setValidationError('');
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
 
               <button
@@ -193,6 +234,12 @@ const Login = () => {
             </p>
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+export default Login;
 
 
       </div>

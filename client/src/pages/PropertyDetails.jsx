@@ -15,7 +15,6 @@ const PropertyDetails = () => {
 
   // Booking states
   const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -74,24 +73,6 @@ const PropertyDetails = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [propRes, revRes] = await Promise.all([
-          api.get(`/properties/${id}`),
-          api.get(`/reviews/${id}`)
-        ]);
-        setProperty(propRes.data);
-        setReviews(revRes.data);
-      } catch (error) {
-        console.error('Error fetching data', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id]);
-
   const handleBooking = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
@@ -106,12 +87,10 @@ const PropertyDetails = () => {
     try {
       await api.post('/bookings', {
         propertyId: id,
-        checkInDate: checkIn,
-        checkOutDate: checkOut
+        checkInDate: checkIn
       });
       setBookingSuccess(true);
       setCheckIn('');
-      setCheckOut('');
     } catch (err) {
       setBookingError(err.response?.data?.message || 'Error creating booking');
     } finally {
@@ -160,7 +139,7 @@ const PropertyDetails = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 animate-fade-in">
       <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-colors group">
-        <ArrowLeft className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" /> Back to search
+        <ArrowLeft className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" /> Back to properties
       </button>
 
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -203,12 +182,12 @@ const PropertyDetails = () => {
           </div>
           
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 mb-10 animate-slide-up delay-100">
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-5">About this property</h2>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-5">About this PG / Hostel</h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line text-lg">{property.description}</p>
           </div>
 
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 mb-10 animate-slide-up delay-200">
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-6">What this place offers</h2>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Facilities & Amenities</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
               {property.amenities?.map((amenity, idx) => (
                 <div key={idx} className="flex items-center gap-3 text-gray-800 capitalize font-medium text-lg">
@@ -228,7 +207,7 @@ const PropertyDetails = () => {
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 mb-10 animate-slide-up delay-300">
             <h2 className="text-2xl font-extrabold text-gray-900 mb-8 flex items-center gap-2">
               <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
-              Reviews {property.numReviews > 0 ? `(${property.averageRating.toFixed(1)} average)` : ''}
+              Resident Reviews {property.numReviews > 0 ? `(${property.averageRating.toFixed(1)} average)` : ''}
             </h2>
 
             {isAuthenticated && user?.role !== 'admin' && (
@@ -246,8 +225,8 @@ const PropertyDetails = () => {
                   </div>
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Your Comment</label>
-                  <textarea required value={comment} onChange={e => setComment(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-white" rows="3" placeholder="How was your stay?"></textarea>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Your Feedback</label>
+                  <textarea required value={comment} onChange={e => setComment(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-white" rows="3" placeholder="Share your experience as a resident..."></textarea>
                 </div>
                 <button type="submit" disabled={reviewLoading} className="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-black transition-colors disabled:opacity-70">
                   {reviewLoading ? 'Submitting...' : 'Submit Review'}
@@ -263,7 +242,7 @@ const PropertyDetails = () => {
                       {review.userId?.name?.charAt(0) || 'U'}
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900">{review.userId?.name || 'Anonymous User'}</h4>
+                      <h4 className="font-bold text-gray-900">{review.userId?.name || 'Anonymous Resident'}</h4>
                       <p className="text-xs text-gray-500 font-medium">{new Date(review.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>
@@ -275,7 +254,7 @@ const PropertyDetails = () => {
                   <p className="text-gray-700">{review.comment}</p>
                 </div>
               )) : (
-                <p className="text-gray-500 font-medium italic">No reviews yet. Be the first to review!</p>
+                <p className="text-gray-500 font-medium italic">No reviews yet from residents.</p>
               )}
             </div>
           </div>
@@ -292,7 +271,7 @@ const PropertyDetails = () => {
 
             {bookingSuccess && (
               <div className="bg-green-50 text-green-700 p-5 rounded-2xl mb-6 border border-green-200 font-medium shadow-sm animate-fade-in">
-                Booking confirmed successfully! You can view it in your dashboard.
+                Enrollment request sent! Check your dashboard for confirmation.
               </div>
             )}
 
@@ -303,28 +282,24 @@ const PropertyDetails = () => {
             )}
 
             <form onSubmit={handleBooking} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Check-in</label>
-                  <input 
-                    type="date" 
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium bg-gray-50 focus:bg-white"
-                    value={checkIn}
-                    onChange={(e) => setCheckIn(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Check-out</label>
-                  <input 
-                    type="date" 
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium bg-gray-50 focus:bg-white"
-                    value={checkOut}
-                    onChange={(e) => setCheckOut(e.target.value)}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Move-in Date</label>
+                <input 
+                  type="date" 
+                  required
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium bg-gray-50 focus:bg-white"
+                  value={checkIn}
+                  onChange={(e) => setCheckIn(e.target.value)}
+                />
               </div>
+              
+              <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                <p className="text-sm text-indigo-700 font-bold flex items-center gap-2">
+                  <Calendar className="h-4 w-4" /> Monthly Subscription
+                </p>
+                <p className="text-xs text-indigo-500 mt-1">Payment will be processed on a monthly basis starting from your move-in date.</p>
+              </div>
+
               <button 
                 type="submit"
                 disabled={bookingLoading}
@@ -333,11 +308,11 @@ const PropertyDetails = () => {
                 {bookingLoading ? 'Processing...' : (
                   <>
                     <Calendar className="h-5 w-5" />
-                    Reserve now
+                    Reserve PG / Hostel
                   </>
                 )}
               </button>
-              <p className="text-center text-sm font-medium text-gray-500 mt-4">You won't be charged yet</p>
+              <p className="text-center text-sm font-medium text-gray-500 mt-4">Long-term stay (Monthly Rent)</p>
             </form>
           </div>
 

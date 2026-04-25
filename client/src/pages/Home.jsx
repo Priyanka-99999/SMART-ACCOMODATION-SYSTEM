@@ -62,10 +62,10 @@ const Home = () => {
         
         <div className="relative max-w-7xl mx-auto text-center z-10">
           <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6 drop-shadow-lg animate-slide-down">
-            Find your perfect <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">stay</span> instantly.
+            Find your perfect <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">PG / Hostel</span> instantly.
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-10 drop-shadow-md animate-slide-down delay-100">
-            Describe what you're looking for, and our AI will find the best match for you.
+            AI-powered search for students and working professionals.
           </p>
         </div>
       </section>
@@ -85,7 +85,7 @@ const Home = () => {
                 <Sparkles className="text-primary h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 font-medium">AI filtered results based on:</p>
+                <p className="text-sm text-gray-600 font-medium">AI found your best matches based on:</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {aiCriteria.budget && <span className="bg-white px-3 py-1 rounded-full shadow-sm text-xs font-semibold text-primary border border-indigo-100">Budget: ≤ Rs {aiCriteria.budget}</span>}
                   {aiCriteria.location && <span className="bg-white px-3 py-1 rounded-full shadow-sm text-xs font-semibold text-primary border border-indigo-100">Location: {aiCriteria.location}</span>}
@@ -103,8 +103,8 @@ const Home = () => {
 
         <div className="flex justify-between items-end mb-10">
           <div>
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Recommended for you</h2>
-            <p className="text-gray-500 mt-2 text-lg">Explore our top accommodations</p>
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Top Rated PG / Hostels</h2>
+            <p className="text-gray-500 mt-2 text-lg">Verified stays for long-term comfort</p>
           </div>
           {!aiCriteria && (
             <button className="text-primary font-semibold flex items-center gap-1 hover:gap-3 transition-all">
