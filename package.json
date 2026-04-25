@@ -1,0 +1,13 @@
+{
+  "name": "smart-accommodation-system",
+  "version": "1.0.0",
+  "description": "PGVA Smart Accommodation Platform",
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "start cmd /k \"cd server && npm run dev\" && start cmd /k \"cd client && npm run dev\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
