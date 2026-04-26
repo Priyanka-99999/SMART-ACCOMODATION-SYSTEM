@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SmartSearch from '../components/SmartSearch';
 import PropertyCard from '../components/PropertyCard';
 import api from '../services/api';
-import { Sparkles, ArrowRight, Search } from 'lucide-react';
+import { Sparkles, ArrowRight, Search, MapPin } from 'lucide-react';
 
 import useAuthStore from '../store/useAuthStore';
 
@@ -11,6 +11,7 @@ const Home = () => {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [aiCriteria, setAiCriteria] = useState(null);
+  const [filters, setFilters] = useState({ location: '', maxPrice: '' });
   const { isAuthenticated, user, fetchWishlist } = useAuthStore();
   const navigate = useNavigate();
 
@@ -26,11 +27,15 @@ const Home = () => {
     }
     fetchProperties();
     if (isAuthenticated) fetchWishlist();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, filters]);
 
   const fetchProperties = async () => {
     try {
-      const res = await api.get('/properties');
+      let url = '/properties?';
+      if (filters.location) url += `location=${filters.location}&`;
+      if (filters.maxPrice) url += `maxPrice=${filters.maxPrice}&`;
+      
+      const res = await api.get(url);
       setProperties(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error('Error fetching properties', error);
@@ -71,9 +76,41 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Search Section */}
-      <div className="px-4 animate-slide-up z-30 relative -mt-10 sm:-mt-12">
+      {/* Search & Filter Section */}
+      <div className="px-4 animate-slide-up z-30 relative -mt-10 sm:-mt-12 space-y-6">
         <SmartSearch onSearchResults={handleSearchResults} />
+        
+        {/* Manual Filters */}
+        <div className="max-w-4xl mx-auto bg-white/80 backdrop-blur-md p-4 rounded-3xl shadow-xl border border-gray-100 flex flex-wrap items-center justify-center gap-4">
+          <div className="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-100 focus-within:border-primary transition-all">
+            <MapPin className="h-4 w-4 text-primary mr-2" />
+            <input 
+              type="text" 
+              placeholder="Location..." 
+              className="bg-transparent border-none outline-none text-sm font-bold text-gray-700 w-32 sm:w-48"
+              value={filters.location}
+              onChange={(e) => setFilters({...filters, location: e.target.value})}
+            />
+          </div>
+          <div className="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-100 focus-within:border-primary transition-all">
+            <span className="text-primary font-black mr-2">₹</span>
+            <input 
+              type="number" 
+              placeholder="Max Price" 
+              className="bg-transparent border-none outline-none text-sm font-bold text-gray-700 w-24 sm:w-32"
+              value={filters.maxPrice}
+              onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
+            />
+          </div>
+          {(filters.location || filters.maxPrice) && (
+            <button 
+              onClick={() => setFilters({ location: '', maxPrice: '' })}
+              className="text-xs font-black text-red-500 hover:text-red-600 uppercase tracking-widest px-2"
+            >
+              Reset
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}

@@ -15,6 +15,17 @@ const createBooking = async (req, res) => {
 
     const checkIn = new Date(checkInDate);
 
+    // Check if user already has an active booking for this property
+    const existingBooking = await Booking.findOne({
+      userId: req.user._id,
+      propertyId,
+      status: { $in: ['pending', 'confirmed'] }
+    });
+
+    if (existingBooking) {
+      return res.status(400).json({ message: 'You already have an active booking or request for this property' });
+    }
+
     // Total price is simply the monthly rent for PGs
     const totalPrice = property.price;
 

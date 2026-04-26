@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PlusCircle, Building, Users, MapPin, Mail, MessageSquare, Trash2, Edit3, TrendingUp, CheckCircle, Clock } from 'lucide-react';
+import { PlusCircle, Building, Users, MapPin, Mail, MessageSquare, Trash2, Edit3, TrendingUp, CheckCircle, Clock, Phone } from 'lucide-react';
 import api from '../services/api';
 import useAuthStore from '../store/useAuthStore';
 
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
   }
 
   // Stats calculation
-  const totalEarnings = bookings.filter(b => b.status === 'confirmed').length * 5000; // Mock calculation
+  const totalEarnings = bookings.filter(b => b.status === 'confirmed').reduce((acc, b) => acc + (b.totalPrice || 0), 0);
   const pendingBookings = bookings.filter(b => b.status === 'pending').length;
   const activeInquiries = inquiries.filter(i => i.status === 'pending').length;
 
@@ -159,9 +159,17 @@ const AdminDashboard = () => {
         </button>
         <button 
           onClick={() => setActiveTab('inquiries')} 
-          className={`whitespace-nowrap px-4 sm:px-8 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all ${activeTab === 'inquiries' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+          className={`relative whitespace-nowrap px-4 sm:px-8 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all ${activeTab === 'inquiries' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
         >
           Inquiries
+          {activeInquiries > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-black">
+                {activeInquiries}
+              </span>
+            </span>
+          )}
         </button>
       </div>
 
@@ -292,7 +300,7 @@ const AdminDashboard = () => {
                             </div>
                             <div>
                               <p className="font-bold text-gray-900 text-sm">{booking.userId?.name}</p>
-                              <p className="text-[10px] text-gray-500">{booking.userId?.email}</p>
+                              <a href={`mailto:${booking.userId?.email}`} className="text-[10px] text-gray-500 hover:text-primary transition-colors block">{booking.userId?.email}</a>
                             </div>
                           </div>
                         </td>
@@ -334,7 +342,7 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                           <p className="font-bold text-gray-900">{booking.userId?.name}</p>
-                          <p className="text-xs text-gray-500">{booking.userId?.email}</p>
+                          <a href={`mailto:${booking.userId?.email}`} className="text-xs text-gray-500 hover:text-primary transition-colors block">{booking.userId?.email}</a>
                         </div>
                       </div>
                       <span className={`px-3 py-1 text-[9px] font-black uppercase rounded-full border ${
@@ -380,7 +388,16 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <h4 className="font-black text-base sm:text-xl text-gray-900">{inquiry.userId?.name}</h4>
-                    <p className="text-xs sm:text-sm text-primary font-bold">{inquiry.contactPhone}</p>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-1">
+                      <a href={`mailto:${inquiry.userId?.email}`} className="text-xs sm:text-sm text-gray-500 hover:text-primary flex items-center gap-1 font-bold transition-colors">
+                        <Mail className="h-3 w-3" /> {inquiry.userId?.email}
+                      </a>
+                      {inquiry.contactPhone && (
+                        <a href={`tel:${inquiry.contactPhone}`} className="text-xs sm:text-sm text-primary hover:text-indigo-700 flex items-center gap-1 font-bold transition-colors">
+                          <Phone className="h-3 w-3" /> {inquiry.contactPhone}
+                        </a>
+                      )}
+                    </div>
                   </div>
                   <span className="ml-auto text-[8px] sm:text-[10px] font-black text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
                     {inquiry.propertyId?.title}
