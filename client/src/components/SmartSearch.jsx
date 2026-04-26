@@ -38,12 +38,15 @@ const SmartSearch = ({ onSearchResults }) => {
           <button
             type="submit"
             disabled={loading}
-            className="bg-primary hover:bg-indigo-700 text-white p-4 rounded-full transition-colors ml-2 shadow-md flex items-center justify-center min-w-[56px]"
+            className="bg-primary hover:bg-indigo-700 text-white px-6 py-4 rounded-full transition-all ml-2 shadow-lg shadow-indigo-100 flex items-center justify-center min-w-[56px] hover:scale-105 active:scale-95"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <Search className="h-5 w-5" />
+              <>
+                <Search className="h-5 w-5" />
+                <span className="ml-2 font-bold hidden md:inline">Search</span>
+              </>
             )}
           </button>
         </div>

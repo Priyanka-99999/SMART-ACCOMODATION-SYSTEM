@@ -14,7 +14,28 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, phone, password, role } = req.body;
+
+    // Strict Validation
+    // 1. Name validation: No numbers allowed
+    const nameHasNumber = /\d/.test(name);
+    if (nameHasNumber) {
+      return res.status(400).json({ message: 'Name should not contain numbers' });
+    }
+
+    // 2. Email validation: Must have @
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ message: 'Please provide a valid email address with @' });
+    }
+
+    // 3. Password validation: 6 digits/chars or more with special character
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (!password || password.length < 6) {
+      return res.status(400).json({ message: 'Password must be 6 characters or more' });
+    }
+    if (!specialCharRegex.test(password)) {
+      return res.status(400).json({ message: 'Password must contain at least one special character' });
+    }
 
     const userExists = await User.findOne({ email });
 
@@ -28,6 +49,7 @@ const registerUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
+      phone,
       password,
       role: userRole
     });
@@ -37,6 +59,7 @@ const registerUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         wishlist: user.wishlist,
         token: generateToken(user._id),
@@ -63,6 +86,7 @@ const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         wishlist: user.wishlist || [],
         token: generateToken(user._id),
@@ -114,8 +138,12 @@ const forgotPassword = async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    // Create reset url
-    const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+    // Create reset url (pointing to frontend)
+    const frontendUrl = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:5173' 
+      : `${req.protocol}://${req.get('host')}`;
+    
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
@@ -161,8 +189,19 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Invalid token' });
     }
 
+    // Strict Password Validation
+    const newPassword = req.body.password;
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be 6 characters or more' });
+    }
+    if (!specialCharRegex.test(newPassword)) {
+      return res.status(400).json({ message: 'Password must contain at least one special character' });
+    }
+
     // Set new password
-    user.password = req.body.password;
+    user.password = newPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save();

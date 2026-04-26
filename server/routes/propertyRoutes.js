@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getProperties, getPropertyById, createProperty, updatePropertyStatus } = require('../controllers/propertyController');
+const { getProperties, getPropertyById, createProperty, updatePropertyStatus, deleteProperty, updateProperty } = require('../controllers/propertyController');
 const { protect, admin } = require('../middleware/auth');
 
 // Note: getProperties needs optional auth check to allow admin/owner queries.
@@ -16,7 +16,9 @@ router.route('/')
   .post(protect, createProperty);
 
 router.route('/:id')
-  .get(getPropertyById);
+  .get(getPropertyById)
+  .put(protect, updateProperty)
+  .delete(protect, deleteProperty);
 
 router.route('/:id/status')
   .put(protect, updatePropertyStatus);

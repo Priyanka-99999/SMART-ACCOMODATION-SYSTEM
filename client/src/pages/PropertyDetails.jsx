@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Wifi, Coffee, Car, Star, Calendar, ArrowLeft, Image as ImageIcon, Mail } from 'lucide-react';
+import { MapPin, Wifi, Coffee, Car, Star, Calendar, ArrowLeft, Image as ImageIcon, Mail, Phone, Building } from 'lucide-react';
 import api from '../services/api';
 import useAuthStore from '../store/useAuthStore';
 
@@ -137,33 +137,33 @@ const PropertyDetails = () => {
     : ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=1200'];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 animate-fade-in">
-      <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-colors group">
-        <ArrowLeft className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" /> Back to properties
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 animate-fade-in">
+      <button onClick={() => navigate(-1)} className="mb-4 sm:mb-6 flex items-center gap-2 text-gray-400 hover:text-primary font-bold transition-colors group text-sm">
+        <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" /> Back to listings
       </button>
 
-      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 tracking-tight">{property.title}</h1>
-          <div className="flex items-center gap-4 text-gray-600 font-medium text-lg">
-            <span className="flex items-center"><MapPin className="h-5 w-5 mr-1.5 text-primary" />{property.location}</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-2 sm:mb-3 tracking-tight">{property.title}</h1>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-gray-500 font-medium text-sm sm:text-lg">
+            <span className="flex items-center"><MapPin className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 text-primary" />{property.location}</span>
             {property.numReviews > 0 && (
-              <span className="flex items-center text-amber-600 bg-amber-50 px-3 py-1 rounded-full text-sm font-bold border border-amber-100">
-                <Star className="h-4 w-4 fill-amber-500 text-amber-500 mr-1" />
-                {property.averageRating.toFixed(1)} ({property.numReviews} reviews)
+              <span className="flex items-center text-amber-600 bg-amber-50 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold border border-amber-100">
+                <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-amber-500 text-amber-500 mr-1" />
+                {property.averageRating.toFixed(1)} ({property.numReviews})
               </span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10">
         {/* Left Column - Details */}
         <div className="lg:col-span-2">
           
           {/* Image Gallery */}
-          <div className="mb-10 animate-slide-up">
-            <div className="rounded-[2rem] overflow-hidden shadow-xl border border-gray-100 relative group aspect-[16/9]">
+          <div className="mb-8 sm:mb-10 animate-slide-up">
+            <div className="rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-xl border border-gray-100 relative group aspect-[4/3] sm:aspect-[16/9]">
               <img src={images[activeImage]} alt={property.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
             </div>
             {images.length > 1 && (
@@ -261,106 +261,137 @@ const PropertyDetails = () => {
 
         </div>
 
-        {/* Right Column - Booking Box */}
+        {/* Right Column - Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white p-8 rounded-[2rem] shadow-2xl border border-gray-100 sticky top-28 animate-slide-up delay-300">
-            <div className="flex items-end gap-1 mb-8 pb-6 border-b border-gray-100">
-              <span className="text-4xl font-extrabold text-gray-900">Rs {property.price}</span>
-              <span className="text-gray-500 mb-1.5 font-medium">/ month</span>
-            </div>
-
-            {bookingSuccess && (
-              <div className="bg-green-50 text-green-700 p-5 rounded-2xl mb-6 border border-green-200 font-medium shadow-sm animate-fade-in">
-                Enrollment request sent! Check your dashboard for confirmation.
-              </div>
-            )}
-
-            {bookingError && (
-              <div className="bg-red-50 text-red-600 p-5 rounded-2xl mb-6 border border-red-200 font-medium shadow-sm animate-fade-in">
-                {bookingError}
-              </div>
-            )}
-
-            <form onSubmit={handleBooking} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Move-in Date</label>
-                <input 
-                  type="date" 
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium bg-gray-50 focus:bg-white"
-                  value={checkIn}
-                  onChange={(e) => setCheckIn(e.target.value)}
-                />
-              </div>
-              
-              <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
-                <p className="text-sm text-indigo-700 font-bold flex items-center gap-2">
-                  <Calendar className="h-4 w-4" /> Monthly Subscription
-                </p>
-                <p className="text-xs text-indigo-500 mt-1">Payment will be processed on a monthly basis starting from your move-in date.</p>
+          <div className="sticky top-28 space-y-6">
+            {/* Booking Box */}
+            <div className="bg-white p-8 rounded-[2rem] shadow-2xl border border-gray-100 animate-slide-up delay-300">
+              <div className="flex items-end gap-1 mb-8 pb-6 border-b border-gray-100">
+                <span className="text-4xl font-extrabold text-gray-900">Rs {property.price}</span>
+                <span className="text-gray-500 mb-1.5 font-medium">/ month</span>
               </div>
 
-              <button 
-                type="submit"
-                disabled={bookingLoading}
-                className="w-full bg-primary hover:bg-indigo-700 text-white font-extrabold py-4 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center gap-2 mt-4"
-              >
-                {bookingLoading ? 'Processing...' : (
-                  <>
-                    <Calendar className="h-5 w-5" />
-                    Reserve PG / Hostel
-                  </>
-                )}
-              </button>
-              <p className="text-center text-sm font-medium text-gray-500 mt-4">Long-term stay (Monthly Rent)</p>
-            </form>
-          </div>
-
-          {/* Contact Owner Form */}
-          {isAuthenticated && user?.role === 'user' && (
-            <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 mt-6 animate-slide-up delay-400">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Mail className="h-5 w-5 text-primary" /> Contact Owner
-              </h3>
-              
-              {inquirySuccess ? (
-                <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-200 font-medium text-sm">
-                  Message sent successfully! The owner will get back to you soon.
+              {bookingSuccess && (
+                <div className="bg-green-50 text-green-700 p-5 rounded-2xl mb-6 border border-green-200 font-medium shadow-sm animate-fade-in">
+                  Enrollment request sent! Check your dashboard for confirmation.
                 </div>
-              ) : (
-                <form onSubmit={handleInquiry} className="space-y-4">
-                  {inquiryError && <div className="text-red-500 text-sm font-medium">{inquiryError}</div>}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your Phone (Optional)</label>
-                    <input 
-                      type="tel"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-gray-50 focus:bg-white text-sm"
-                      value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="For quicker replies"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message</label>
-                    <textarea 
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-gray-50 focus:bg-white text-sm h-24"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Hi, I'm interested in..."
-                    />
-                  </div>
-                  <button 
-                    type="submit"
-                    disabled={inquiryLoading}
-                    className="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70"
-                  >
-                    {inquiryLoading ? 'Sending...' : 'Send Message'}
-                  </button>
-                </form>
               )}
+
+              {bookingError && (
+                <div className="bg-red-50 text-red-600 p-5 rounded-2xl mb-6 border border-red-200 font-medium shadow-sm animate-fade-in">
+                  {bookingError}
+                </div>
+              )}
+
+              <form onSubmit={handleBooking} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Move-in Date</label>
+                  <input 
+                    type="date" 
+                    required
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium bg-gray-50 focus:bg-white"
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
+                  />
+                </div>
+                
+                <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                  <p className="text-sm text-indigo-700 font-bold flex items-center gap-2">
+                    <Calendar className="h-4 w-4" /> Monthly Subscription
+                  </p>
+                  <p className="text-xs text-indigo-500 mt-1">Payment will be processed on a monthly basis starting from your move-in date.</p>
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={bookingLoading}
+                  className="w-full bg-primary hover:bg-indigo-700 text-white font-extrabold py-4 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center gap-2 mt-4"
+                >
+                  {bookingLoading ? 'Processing...' : (
+                    <>
+                      <Calendar className="h-5 w-5" />
+                      Reserve PG / Hostel
+                    </>
+                  )}
+                </button>
+                <p className="text-center text-sm font-medium text-gray-500 mt-4">Long-term stay (Monthly Rent)</p>
+              </form>
             </div>
-          )}
+
+            {/* Owner Info Card */}
+            <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 animate-slide-up delay-400">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Building className="h-5 w-5 text-primary" /> Managed By
+              </h3>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-14 w-14 bg-indigo-50 text-primary rounded-2xl flex items-center justify-center text-xl font-black shadow-sm">
+                  {property.ownerId?.name?.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-black text-gray-900 text-lg">{property.ownerId?.name}</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Verified Owner</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100 hover:border-primary transition-colors">
+                  <div className="p-2 bg-white rounded-lg shadow-sm text-primary"><Mail className="h-4 w-4" /></div>
+                  <p className="font-bold text-sm truncate">{property.ownerId?.email}</p>
+                </div>
+                {property.ownerId?.phone && (
+                  <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100 hover:border-primary transition-colors">
+                    <div className="p-2 bg-white rounded-lg shadow-sm text-primary"><Phone className="h-4 w-4" /></div>
+                    <p className="font-bold text-sm">{property.ownerId?.phone}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Contact Owner Form */}
+            {isAuthenticated && user?.role === 'user' && (
+              <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 animate-slide-up delay-500">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-primary" /> Contact Owner
+                </h3>
+                
+                {inquirySuccess ? (
+                  <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-200 font-medium text-sm">
+                    Message sent successfully! The owner will get back to you soon.
+                  </div>
+                ) : (
+                  <form onSubmit={handleInquiry} className="space-y-4">
+                    {inquiryError && <div className="text-red-500 text-sm font-medium">{inquiryError}</div>}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your Phone (Optional)</label>
+                      <input 
+                        type="tel"
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-gray-50 focus:bg-white text-sm"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        placeholder="For quicker replies"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message</label>
+                      <textarea 
+                        required
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-gray-50 focus:bg-white text-sm h-24"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Hi, I'm interested in..."
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={inquiryLoading}
+                      className="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70"
+                    >
+                      {inquiryLoading ? 'Sending...' : 'Send Message'}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

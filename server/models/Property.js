@@ -15,4 +15,6 @@ const propertySchema = new mongoose.Schema({
   numReviews: { type: Number, default: 0 }
 }, { timestamps: true });
 
+propertySchema.index({ title: 'text', description: 'text', location: 'text' });
+
 module.exports = mongoose.model('Property', propertySchema);

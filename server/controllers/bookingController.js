@@ -56,8 +56,59 @@ const getBookings = async (req, res) => {
   }
 };
 
+// @desc    Get bookings for owner properties
+// @route   GET /api/bookings/owner
+// @access  Private/Owner
+const getOwnerBookings = async (req, res) => {
+  try {
+    // Find all properties owned by this user
+    const ownerProperties = await Property.find({ ownerId: req.user._id });
+    const propertyIds = ownerProperties.map(p => p._id);
+
+    // Find all bookings for those properties
+    const bookings = await Booking.find({ propertyId: { $in: propertyIds } })
+      .populate('userId', 'name email')
+      .populate('propertyId', 'title location price');
+
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update booking status
+// @route   PUT /api/bookings/:id/status
+// @access  Private/Owner
+const updateBookingStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const booking = await Booking.findById(req.params.id).populate('propertyId');
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    // Verify ownership
+    if (booking.propertyId.ownerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to update this booking' });
+    }
+
+    booking.status = status;
+    if (status === 'confirmed') {
+      booking.paymentStatus = 'paid'; // Or stay pending until actual payment
+    }
+
+    await booking.save();
+    res.json(booking);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createBooking,
   getMyBookings,
-  getBookings
+  getBookings,
+  getOwnerBookings,
+  updateBookingStatus
 };

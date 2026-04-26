@@ -36,7 +36,7 @@ const getProperties = async (req, res) => {
 
 const getPropertyById = async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id).populate('ownerId', 'name email');
+    const property = await Property.findById(req.params.id).populate('ownerId', 'name email phone');
     if (property) {
       res.json(property);
     } else {
@@ -93,4 +93,58 @@ const updatePropertyStatus = async (req, res) => {
   }
 };
 
-module.exports = { getProperties, getPropertyById, createProperty, updatePropertyStatus };
+const deleteProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    // Check ownership or admin
+    if (property.ownerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(401).json({ message: 'User not authorized' });
+    }
+
+    await Property.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Property removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateProperty = async (req, res) => {
+  try {
+    const { title, description, price, location, amenities, images, gender, distance } = req.body;
+    const property = await Property.findById(req.params.id);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    // Check ownership or admin
+    if (property.ownerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(401).json({ message: 'User not authorized' });
+    }
+
+    property.title = title || property.title;
+    property.description = description || property.description;
+    property.price = price || property.price;
+    property.location = location || property.location;
+    property.amenities = amenities || property.amenities;
+    property.images = images || property.images;
+    property.gender = gender || property.gender;
+    property.distance = distance || property.distance;
+    
+    // If updated by owner, reset to pending? Or keep approved? 
+    // Let's keep it same for now or set to pending if we want strict verification.
+    if (req.user.role !== 'admin') property.status = 'pending';
+
+    const updatedProperty = await property.save();
+    res.json(updatedProperty);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getProperties, getPropertyById, createProperty, updatePropertyStatus, deleteProperty, updateProperty };

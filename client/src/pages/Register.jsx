@@ -6,36 +6,58 @@ import useAuthStore from '../store/useAuthStore';
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user');
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
   
-  const { register, loading, error, isAuthenticated } = useAuthStore();
+  const { register, loading, error, isAuthenticated, clearError } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    clearError();
+    return () => clearError();
+  }, [clearError]);
 
   useEffect(() => {
     if (isAuthenticated) {
       if (role === 'admin') navigate('/superadmin');
       else if (role === 'owner') navigate('/admin');
-      else navigate('/'); // Redirect to properties listing as per previous request
+      else navigate('/'); 
     }
   }, [isAuthenticated, navigate, role]);
 
   const validateForm = () => {
-    if (name.length < 3) {
-      setValidationError('Name must be at least 3 characters long');
+    // Name validation: Letters only, at least 3 characters
+    const nameRegex = /^[a-zA-Z\s]{3,}$/;
+    if (!nameRegex.test(name)) {
+      setValidationError('Name must be at least 3 characters and contain only letters (no numbers)');
       return false;
     }
+
+    // Email validation: Proper format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setValidationError('Please enter a valid email address');
       return false;
     }
+
+    // Password validation: Min 6 characters
     if (password.length < 6) {
       setValidationError('Password must be at least 6 characters long');
       return false;
     }
+    
+    // Strict rule ONLY for Tenant and Owner
+    if (role === 'user' || role === 'owner') {
+      const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+      if (!specialCharRegex.test(password)) {
+        setValidationError('Password must contain at least one special character (!@#$%^&* etc.)');
+        return false;
+      }
+    }
+
     setValidationError('');
     return true;
   };
@@ -45,24 +67,19 @@ const Register = () => {
     if (!validateForm()) return;
     
     try {
-      await register(name, email, password, role);
+      await register(name, email, password, role, phone);
     } catch (err) {
       // Error handled in store
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-24 sm:pt-32 pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-indigo-100 to-transparent -z-10"></div>
       
-      <div className="sm:mx-auto sm:w-full sm:max-w-md pt-8">
-        <div className="flex justify-center mb-4">
-          <Link to="/" className="flex items-center gap-2 text-primary hover:text-indigo-700 transition-colors">
-            <Home className="h-10 w-10 p-2 bg-indigo-100 rounded-2xl" />
-          </Link>
-        </div>
-        <h2 className="text-center text-3xl font-extrabold text-gray-900 tracking-tight">Create your account</h2>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md pt-10 sm:pt-4">
+        <h2 className="text-center text-3xl font-black text-gray-900 tracking-tight">Create your account</h2>
         <p className="mt-2 text-center text-sm text-gray-600 font-medium">
           Already have an account?{' '}
           <Link to="/login" className="font-bold text-primary hover:text-indigo-700 transition-colors">
@@ -71,11 +88,11 @@ const Register = () => {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-10 px-6 sm:px-10 rounded-[2rem] shadow-2xl shadow-indigo-100/50 border border-gray-100">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div className={`bg-white py-10 px-6 sm:px-10 rounded-[2rem] shadow-xl shadow-gray-100 border border-gray-100 animate-slide-up ${validationError ? 'animate-shake' : ''}`}>
           
           {(error || validationError) && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-bold flex items-center gap-2 animate-shake">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm font-bold flex items-center gap-2 animate-fade-in">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <span>{validationError || error}</span>
             </div>
@@ -87,7 +104,7 @@ const Register = () => {
               <input
                 type="text"
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900"
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 ${validationError && validationError.toLowerCase().includes('name') ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
                 placeholder="e.g. John Doe"
                 value={name}
                 onChange={(e) => {
@@ -102,13 +119,25 @@ const Register = () => {
               <input
                 type="email"
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900"
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 ${validationError && validationError.toLowerCase().includes('email') ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
                   if (validationError) setValidationError('');
                 }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Phone Number</label>
+              <input
+                type="tel"
+                required
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900"
+                placeholder="+91 98765 43210"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
             
@@ -118,7 +147,7 @@ const Register = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900"
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 ${validationError && validationError.toLowerCase().includes('password') ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => {
@@ -146,7 +175,6 @@ const Register = () => {
               >
                 <option value="user">Tenant (Looking for stay)</option>
                 <option value="owner">PG Owner (Listing properties)</option>
-                <option value="admin">Super Admin (Platform management)</option>
               </select>
             </div>
 
@@ -158,11 +186,6 @@ const Register = () => {
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
-        </div>
-      </div>
-    </div>
-  );
-};
         </div>
       </div>
     </div>

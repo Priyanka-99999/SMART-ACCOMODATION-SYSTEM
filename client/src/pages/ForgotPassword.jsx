@@ -25,14 +25,11 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-24 sm:pt-32 pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-indigo-100 to-transparent -z-10"></div>
       
-      <div className="sm:mx-auto sm:w-full sm:max-w-md pt-8 text-center">
-        <Link to="/" className="inline-flex items-center gap-2 text-primary hover:text-indigo-700 transition-colors mb-6">
-          <Home className="h-10 w-10 p-2 bg-indigo-100 rounded-2xl" />
-        </Link>
-        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Reset Password</h2>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md pt-10 sm:pt-6 text-center">
+        <h2 className="text-3xl font-black text-gray-900 tracking-tight">Reset Password</h2>
         <p className="mt-2 text-sm text-gray-600 font-medium">
           Enter your email and we'll send you a link to reset your password.
         </p>
