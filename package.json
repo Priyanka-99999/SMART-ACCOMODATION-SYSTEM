@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "PGVA Smart Accommodation Platform",
   "scripts": {
-    "build": "cd client && npm install && npm run build",
+    "build": "cd client && npm install && npm run build && move dist ..\\dist",
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
     "dev": "start cmd /k \"cd server && npm run dev\" && start cmd /k \"cd client && npm run dev\""
